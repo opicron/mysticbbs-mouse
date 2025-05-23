@@ -4,6 +4,9 @@ This Python 2.7 script shows an example how to use mouse events in your mods.
 
 Currently I tested functionality under Netrunner, Syncterm and fTelnet. Icyterm doesnt have mouse event support yet.
 
+https://github.com/rickparrish/fTelnet/issues/32
+https://github.com/mkrueger/icy_tools/issues/112
+
 In Mystic you use 'getkey()' and 'keypressed()'. Replace these with 'getkey_custom()' and 'keypressed_custom()'.
 
 ## Keypressed()
