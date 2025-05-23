@@ -1,0 +1,116 @@
+import os
+import sys
+import termios
+import tty
+import select
+import random
+import time
+
+import mystic_bbs as bbs
+
+"""
+def enable_mouse_tracking():
+    # Enable X10 mouse reporting (basic click)
+    sys.stdout.write('\x1b[?1000h')
+    sys.stdout.flush()
+""" 
+
+"""
+def disable_mouse_tracking():
+    sys.stdout.write('\x1b[?1000l')
+    sys.stdout.flush()
+"""
+
+def set_cbreak(fd):
+    old_attrs = termios.tcgetattr(fd)
+    tty.setcbreak(fd)
+    #tty.setraw(fd)
+    return old_attrs
+
+
+def restore_terminal(fd, old_attrs):
+    termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
+
+
+def keypress_custom(fd, timeout=0.1):
+    return bool(select.select([fd], [], [], timeout)[0])
+
+def getkey_custom(fd, prevmouse = False):
+
+    buf = os.read(fd, 6)  # read up to 12 bytes
+    if not buf:
+        return None, False, False
+
+    # Mouse: ESC [ M cb cx cy
+    if buf.startswith('\x1b[M'): # and len(buf) >= 6:
+        key, cx, cy = map(ord, buf[3:6])
+
+        #take time
+        now = time.time()
+
+        #check for double click
+        doubleclick = False
+        if (
+            prevmouse and
+            key == 32 and
+            now - prevmouse[2] < 0.3
+        ):
+            key = 4 + 32 #0 left, 1 right, 2 middle, 3 release, 4 double click
+
+        # Always store the current time (now), not conditionally
+        key = key - 32
+        mouse = [cx - 32, cy - 32, now]
+        return key, False, mouse
+
+    # Arrow keys: ESC [ A/B/C/D
+    if buf.startswith('\x1b[') and len(buf) >= 3:
+        return buf[2], True, False
+
+    # Print other keys
+    for ch in buf:
+        return ch, False, False
+
+def main():
+    #enable_mouse_tracking()
+
+    try:
+        bbs.gotoxy(1,1)
+        bbs.writeln("Press keys (press 'q' to quit)...")
+
+        fd = sys.stdin.fileno()
+        old_attrs = set_cbreak(fd)
+
+        chars = ['-', '/', '\\', '|']
+
+        mouse = False
+        while not bbs.shutdown():
+            
+            if not keypress_custom(fd):
+                bbs.gotoxy(40,1)    
+                random_char = random.choice(chars)
+                bbs.write(random_char)
+                bbs.flush()
+
+            else:
+                key, extended, mouse = getkey_custom(fd, mouse)
+                if mouse:
+
+                    bbs.writeln("Mouse event: button %d at (%d,%d) %s" % (key, mouse[0], mouse[1], format(mouse[2])))
+
+                elif extended == True:
+                    bbs.writeln("Extended key:"+ key)
+
+                elif extended == False:
+                    # Exit on 'q'
+                    bbs.writeln("Key:"+ repr(key))
+                    if key == 'q':
+                        bbs.writeln("Exiting...")
+                        break                
+
+
+    finally:
+        restore_terminal(fd, old_attrs)
+        #disable_mouse_tracking()
+
+if __name__ == "__main__":
+    main()
