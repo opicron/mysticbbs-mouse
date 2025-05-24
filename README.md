@@ -18,7 +18,7 @@ Returns `true` or `false` when chars are in the buffer. Use this check to do ani
 
 Returns an tuple of `[key, extended, mouse]`.
 
-Mouse is a tuple of `[x,y,timestamp]`. The timestamp is used to detect double click functionality.
+Mouse is a tuple of `[x,y,timestamp]` or `false` when no mouse event detected. The timestamp is used to detect double click functionality.
 
 Key is the key pressed. When mouse not `false` used key is `0,1,2` for left, right and middle button, and `4` on doubleclick.
 
