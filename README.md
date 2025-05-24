@@ -10,6 +10,8 @@ https://github.com/mkrueger/icy_tools/issues/112
 
 In Mystic you use `getkey()` and `keypressed()`. Replace these with `getkey_custom()` and `keypressed_custom()`.
 
+*Important note: you CANNOT use this in combination with Mystic own keyboard functions! Do not use `getkey()` or the display codes `|PA`, `|PN` or any prompts which take inputs. You will have to work around these prompts by self prompting and stuffing the output using `stuffkey()`.*
+
 ## keypressed_custom()
 
 Returns `true` or `false` when chars are in the buffer. Use this check to do animations while waiting for keypress.
